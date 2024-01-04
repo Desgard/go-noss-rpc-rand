@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"sync/atomic"
 	"time"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/websocket"
@@ -36,6 +37,38 @@ var (
 	ErrDifficultyTooLow = errors.New("nip13: insufficient difficulty")
 	ErrGenerateTimeout  = errors.New("nip13: generating proof of work took too long")
 )
+
+func getRpcUrl() string {
+	urlList := []string{
+			"https://arbitrum-one.publicnode.com",
+			"https://arb-mainnet.unifra.io/v1/bb7f9fd643754558bf204157b1af7931",
+			"https://arbitrum.blockpi.network/v1/rpc/829a98f75d90ce7116e40fba9655b4d7dcb770db",
+			"https://arbitrum-mainnet.infura.io/v3/80c0d6915cac453cb8e5b1facfaecc21",
+			"https://go.getblock.io/cf5a563f7de0420c90f6a81d357ed7a2",
+			"https://arb-mainnet.g.alchemy.com/v2/9KyAxglA5DqtMsGyDJ0gZvPot9o9skmJ",
+			"https://arbitrum.llamarpc.com",
+			"https://endpoints.omniatech.io/v1/arbitrum/one/public",
+			"https://rpc.arb1.arbitrum.gateway.fm",
+			"https://lb.nodies.app/v1/3a59dad98dc84331ad26e7152934643a",
+			"https://rpc.ankr.com/arbitrum",
+			"https://arbitrum.blockpi.network/v1/rpc/public",
+			"https://arb1.arbitrum.io/rpc",
+			"https://1rpc.io/arb",
+			"https://arb-pokt.nodies.app",
+			"https://arbitrum-one.public.blastapi.io",
+			"https://arb-mainnet-public.unifra.io",
+			"https://arbitrum.api.onfinality.io/public",
+			"https://arbitrum.meowrpc.com",
+			"https://arbitrum.drpc.org",
+	}
+
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(urlList))))
+	if err != nil {
+			return "https://arbitrum.api.onfinality.io/public"
+	}
+
+	return urlList[n.Int64()]
+}
 
 func init() {
 
@@ -191,7 +224,8 @@ func mine(ctx context.Context, messageId string, client *ethclient.Client) {
 		fmt.Println("Response Status:", resp.Status)
 		spendTime := time.Since(startTime)
 		// fmt.Println("Response Body:", string(body))
-		fmt.Println(nostr.Now().Time(), "spend: ", spendTime, "!!!!!!!!!!!!!!!!!!!!!published to:", evNew.ID)
+		fmt.Println(nostr.Now().Time(), "spend: ", spendTime)
+		fmt.Println("published to:", evNew.ID)
 		atomic.StoreInt32(&nonceFound, 0)
 	case <-ctx.Done():
 		fmt.Print("done")
@@ -230,7 +264,7 @@ func main() {
 
 	var err error
 
-	client, err := ethclient.Dial(arbRpcUrl)
+	client, err := ethclient.Dial(getRpcUrl())
 	if err != nil {
 		log.Fatalf("无法连接到Arbitrum节点: %v", err)
 	}
